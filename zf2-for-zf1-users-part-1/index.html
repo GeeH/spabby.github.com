@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ZF2 Gary Hockin Technical Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Le styles -->
+    <link href="/css/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/style.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/bootstrap-responsive.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <!-- Scripts -->
+    <script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+<!--[if lt IE 9]> <script type="text/javascript" src="/js/html5.js"></script><![endif]-->
+</head>
+
+<body>
+
+<!--<div class="navbar navbar-fixed-top">-->
+<!--    <div class="navbar-inner">-->
+<!--        <div class="container">-->
+<!--            <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy_normal.png" alt="Gary Hockin Blog"-->
+<!--                 class="img-polaroid pull-left" id="nav-portrait"/>-->
+<!--            <a class="brand"-->
+<!--               href="--><!--">-->
+<!--</a>-->
+<!---->
+<!--            <form class="pull-right navbar-search">-->
+<!--                <input type="text" class="search-query" placeholder="Search">-->
+<!--            </form>-->
+<!--        </div>-->
+<!---->
+<!--    </div>-->
+<!---->
+<!--</div>-->
+
+<div class="container">
+    <div class="hero-unit">
+        <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy.png" alt="Gary Hockin" width="175"
+             height="175" align="right" class="img-polaroid" id="hero-portrait"/>
+
+        <h1><a href="/">Gary Hockin Blog</a></h1>
+
+        <p>Technical musings on PHP, specifically Zend Framework (1 and 2)</p>
+    </div>
+
+    <div class="row">
+        <div class="span9">
+            <p class="hidden">A look at what has changed in some of the core components between Zend Framework 1, and Zend Framework 2.</p>
+
+<h1>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 1</h1>
+
+<p>Having worked with ZF1 for a lot of years, I've been watching the development of ZF2 with interest. I've tried nearly every version, from the heady days of the pre-Skeleton App, right through the betas and release candidates.</p>
+
+<p>With the imminent release of ZF2 proper, I thought I would share with you some of the most obvious differences between ZF1 and Zf2. Of course, these are only my opinions. While I've contributed (lightly), I've learned most of my ZF2 knowledge from hanging around in IRC and badgering people. If you want to learn quickly and have no remorse for annoying others, you should too!</p>
+
+<h2>Getting Started</h2>
+
+<p>There is currently no command line tool for ZF2. Let me repeat that. There is currently no Zend_Tool cli deployment tool for ZF2. It's not so bad, honest. Instead, there is a GitHub project containing a skeleton application that contains all the basic files and configurations to get you started.</p>
+
+<p>https://github.com/zendframework/ZendSkeletonApplication</p>
+
+<p>Once you've cloned a copy of the application locally, you can use composer to install it's dependencies (currently only ZF2). Composer is brilliant. It's a dependency/package manager that lets you grab any code you need from various locations just by modifying a json text file and running a php command line script. If you are serious about learning to use ZF2, I suggest you have a play with it, it's great. The documentation for the skeleton app includes instructions on using composer to pull ZF2. Composer also handles all your auto-loading needs, so you don't need to manually configure your PHP autoloading, which is another great reason to be using it.</p>
+
+<h2>Namespaces</h2>
+
+<p>Lots of people will have been using namespaces since the release of PHP 5.3 in 2009. I'm sure that lots of people (like me) will have been happily working away with their chosen framework and <em>not</em> used namespaces. For me, jumping from ZF1 to ZF2 also meant jumping from <code>Long_Unweildy_Underscore_Seperated_Class_Names</code> to nice <code>Snappy\Namespaced\Classes</code>. If there's one thing in PHP I wish I'd started using earlier, it's namespaces.</p>
+
+<p>Namespaces basically allow you to have short, snappy class names without worrying about collisions. The reason the ZF1 uses incredibly verbose underscore separated class names like <code>Zend_Db_Table_Abstract</code> is because if it was just called <code>TableAbsract</code> then there is no guarentee that some other code library won't be included that also has a class named <code>TableAbstract</code>, and errors abound.
+In the pre-namespace world, the way to try and avoid collisions was to attempt to be unique through being verbose. While this works, it's hardly any fun for the developer who has to remember very long and tedious class names.</p>
+
+<p>Up steps the namespace. It allows you to set a base namespace across many files, that allows those files to share a namespace. You can then declare any classes you wish to share that namespace without fear of collision.</p>
+
+<pre><code>&lt;?php
+namespace Spabby;
+class Client
+{
+}
+</code></pre>
+
+<pre><code>&lt;?php
+namespace Zend;
+class Client
+{
+}
+</code></pre>
+
+<p>This is fine, no errors will occur, because I need to use the Fully-Qualified-Namespace (FQN) to reference these classes; 
+<code>$client = new \Spabby\Client();</code>
+"How does this help!" I hear you cry. Because in the namespace section of any PHP file, we can also tell the parser to import other namespaces via the <code>use</code> command.</p>
+
+<pre><code>&lt;?php
+namespace Spabby;
+use Zend\Http\Client;
+
+class Hello
+{
+    public function world()
+    {
+        $client = new Client();
+    }
+}
+</code></pre>
+
+<p>Because of the <code>use</code> statement, PHP will instantiate a new Zend\Http\Client. Clever.</p>
+
+<p>Obviously, this is a very lightweight introduction to namespaces, they deserve a blog post all of their own. Because I'm lazy, and because someone inevitably will have done it better, to learn more check out Rob Allen's primer here:</p>
+
+<p>http://akrabat.com/php/a-primer-on-php-namespaces/</p>
+
+<p>Matthew Weier O'Phinney also has a blog post:</p>
+
+<p>http://mwop.net/blog/254-Why-PHP-Namespaces-Matter.html</p>
+
+<p>or php.net's introduction:</p>
+
+<p>http://uk.php.net/manual/en/language.namespaces.php</p>
+
+<h2>Modules</h2>
+
+<h3>ZF1</h3>
+
+<p>Modules in Zend Framework 1 aren't really modular at all. ZF1 modules are really a method of grouping descrete areas of code together, without them being inherently reusable.
+It's impossible to grab a ZF1 module that someone else has used, and quickly and easily drop it into your project.</p>
+
+<h3>ZF2</h3>
+
+<p>Zend Framework 2's modules really are modular. You can drop in someone else's module, and with a simple line added to your application config file,
+you can be up and running in seconds. One of the key objectives when writing ZF2 was that it should make modular code-reuse as simple and easy as possible.
+I think this has been achieved with distinction. Once the ecosystem is established and mature, you should be able to easily add common functionality to your ZF2 project by
+ simply picking and choosing the modules you need from the repository.</p>
+
+<p>To quote a famous telephone manufacturer, need user registration and login functionality? There's a module for that.</p>
+
+<p>The Zend Framework Commons team are a group of community contributors who are comitted to releasing high quality modules with the <code>Zf-Commons</code> namespace.
+<code>ZfcUser</code> is a user registration and login module written and maintained by them. Because it's <code>Zf-Commons</code>, it has an implied level of quality and maintenance. So, if you want
+to add user login and registration, it's simply a case of adding the ZfcUser dependency to your composer.json file:</p>
+
+<pre><code>"require": {
+    "zf-commons/zfc-user": "dev-master"
+</code></pre>
+
+<p>Now, when you do a <code>php composer.phar update</code>, composer will pull in <code>ZfcUser</code> (and it's dependency <code>ZfcBase</code>) into your "vendor" library directory. Including the module is just a simple
+case of adding <code>ZfcUser</code> to your list of installed modules in <code>application.config.php</code>. The module needs a little configuration (create the database tables it uses and tell it which
+database connection to use), but because modules have their own routes, controllers and view scripts, once it's enabled you have a fully working user registration and authentication
+system available at the <code>/user</code> entry point in minutes.</p>
+
+<h2>Bootstrapping</h2>
+
+<h3>ZF1</h3>
+
+<p>Bootstrapping resources in ZF1 has evolved to be a combination of directives in the <code>application.ini</code>, and underscore prefixed functions in a module's <code>Bootstrap.php</code>. Generally, things
+that can be instantiated with minimal or no configuration can be added to the <code>application.ini</code>, whereas more complex resources that may need dependencies or similar are handled in the Bootstrap.php.
+Each module can (and should) have it's <code>Bootstrap.php</code>. As an example, you can bootstrap the <code>Zend_Translate</code> object using an _initTranslate method in the application <code>Bootstrap.php</code> like this:</p>
+
+<pre><code>protected function _initTranslate()
+{
+    $translate = new Zend_Translate('array', APPLICATION_PATH.'/lang/en_EN.php', 'en_EN');
+    Zend_Registry::set('Zend_Translate', $translate);
+}
+</code></pre>
+
+<p>This instantiates a new Zend_Translate object using the array adapter, and adds the English translations from the en_EN.php array file. It then puts it into the registry, having a 'Zend_Translate'
+key in the registry automatically enables the translate view helpers.</p>
+
+<p>You could also use the <code>application.ini</code> (or <code>Bootstrap.php</code>) to include front controller plugins. Front controller plugins allow you to hook into any part of the dispatch process and run custom
+code so that you can perform actions on every request. A great example of code that is typically performed on every request is authentication. ZF1 expects the developer to write his own authentication
+methods using Zend_Auth, and usually this was handled in a FC plugin:</p>
+
+<pre><code>class Central_Plugin_AuthPlugin extends Zend_Controller_Plugin_Abstract
+{
+     public function dispatchLoopStartup(Zend_Controller_Request_Abstract $request)
+     {
+        // if not logged in, redirect to the login page
+        // create an instance of Zend_Auth
+        $auth = Zend_Auth::getInstance();
+        // if not logged in
+        if (!$auth-&gt;hasIdentity())
+        {
+            // set the new controller name to be the login controller
+            $request-&gt;setControllerName('login')
+            // set dispached to be false so the dispatch loop starts again
+            -&gt;setDispatched(false);
+        }
+     }
+}
+</code></pre>
+
+<p>Which is loaded in <code>application.ini</code> by:</p>
+
+<pre><code>resources.frontController.plugins[] = "Plugin_AuthPlugin"
+</code></pre>
+
+<h3>ZF2</h3>
+
+<p>There is no application level bootrapping in Zend Framework 2, each module is responsible for bootstrapping it's own resources in it's <code>Module.php</code>.
+This is done using a combination of the <code>onBootstrap</code> method of the module class, and the Event Manager. We'll go into the Event Manager in more detail
+in Part 2. Realistically, most bootstrapping is no longer needed; it's been replaced by entries in the Service Manager (covered in Part 2), and event
+hooks (also covered in Part 2!), but as an example, here is how you can perform module level bootstrapping by using the <code>onBootrap</code> method of <code>Module.php</code>:</p>
+
+<pre><code>public function onBootstrap(\Zend\Mvc\Event $e)
+{
+    $myService = $e-&gt;getApplication()-&gt;getServiceLocator()-&gt;get('my-service');
+    $myService-&gt;doBootrappingCode();
+}
+</code></pre>
+
+<h2>Part 2</h2>
+
+<p>Part two will be released soon, and will include such wisdom as:</p>
+
+<ul>
+<li>Routing</li>
+<li>Event Manager</li>
+<li>Service Manager</li>
+<li>Db</li>
+<li>Views</li>
+</ul>
+
+<p>Please drop me a tweet or comment if you have any queries, disagreements or compliments (yeah right), I'd love to hear
+from you!</p>
+
+<p><a href="/zf2-for-zf1-users-sm">Go to Part 2!</a></p>
+            <hr/>
+                            <div id="disqus_thread"></div>
+                <script type="text/javascript">
+                    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                    var disqus_shortname = 'hockblog'; // required: replace example with your forum shortname
+
+                    /* * * DON'T EDIT BELOW THIS LINE * * */
+                    (function() {
+                        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+                        </div>
+        <div class="span3">
+            <div class="well well-small">
+                <ul id="latest-blog-posts">
+                    <h3>Latest Blog Posts</h3>
+                    <li><a href="/zf2-for-zf1-users-part-2"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 2</h4><p>28 Sep 2012</p></a></li>
+<li><a href="/zf2-for-zf1-users-part-1"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 1</h4><p>26 Sep 2012</p></a></li>
+<li><a href="/zend-framework-2-REST"><h4>Zend Framework 2 and a Restful API Application</h4><p>29 May 2012</p></a></li>
+<li><a href="/zend-framework-2-OAuth2"><h4>ZendOAuth2Client maybe?</h4><p>10 May 2012</p></a></li>
+<li><a href="/facebook-fb-connect-streampublish"><h4>FB.Connect.streamPublish – wrestling the demons of the Facebook JS library</h4><p>11 Jun 2010</p></a></li>
+                </ul>
+            </div>
+
+            <a class="twitter-timeline" href="https://twitter.com/GeeH" data-widget-id="251243211404754944">Tweets by @GeeH</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; Gary Hockin All rights reserved.</p>
+    </footer>
+
+</div>
+<!-- /container -->
+
+
+<script>
+    var _gaq = [
+        ['_setAccount', 'UA-35128972-1'],
+        ['_trackPageview']
+    ];
+    (function (d, t) {
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s)
+    }(document, 'script'));
+</script>
+
+</body>
+</html>
+
