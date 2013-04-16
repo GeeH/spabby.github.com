@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ZF2 Gary Hockin Technical Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Le styles -->
+    <link href="/css/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/style.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/bootstrap-responsive.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <!-- Scripts -->
+    <script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+<!--[if lt IE 9]> <script type="text/javascript" src="/js/html5.js"></script><![endif]-->
+</head>
+
+<body>
+
+<!--<div class="navbar navbar-fixed-top">-->
+<!--    <div class="navbar-inner">-->
+<!--        <div class="container">-->
+<!--            <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy_normal.png" alt="Gary Hockin Blog"-->
+<!--                 class="img-polaroid pull-left" id="nav-portrait"/>-->
+<!--            <a class="brand"-->
+<!--               href="--><!--">-->
+<!--</a>-->
+<!---->
+<!--            <form class="pull-right navbar-search">-->
+<!--                <input type="text" class="search-query" placeholder="Search">-->
+<!--            </form>-->
+<!--        </div>-->
+<!---->
+<!--    </div>-->
+<!---->
+<!--</div>-->
+
+<div class="container">
+    <div class="hero-unit">
+        <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy.png" alt="Gary Hockin" width="175"
+             height="175" align="right" class="img-polaroid" id="hero-portrait"/>
+
+        <h1><a href="/">Gary Hockin Blog</a></h1>
+
+        <p>Technical musings on PHP, specifically Zend Framework (1 and 2)</p>
+    </div>
+
+    <div class="row">
+        <div class="span9">
+            <p class="hidden">Coding an OAuth2 client for ZF2.</p>
+
+<h1>ZendOAuth2Client maybe?</h1>
+
+<p>Recently I’ve been working a lot on trying to get OAuth2 support into beta 4 of Zend Framework 2, and there were a few challenges. Allowing the client to consume the variety of  providers out there proved to be the first.  There have been several drafts of the OAuth2 specification, and providers have implemented a variety of the drafts. As each of the drafts have subtle differences, the client needs to be able to have a default configuration that can be over-ridden on a per-provider basis.</p>
+
+<p>OAuth 2 is a 2-step process that I like to think of in 4-steps, that allows an application to retrieve an access token that can be used to request further information on the logged in user from the API:</p>
+
+<ul>
+<li>Client sends request to the OAuth2 server  containing the unique application identifier and the scope of access the application requires.</li>
+<li>The server responds with an encrypted response containing a time-sensitive code that can be exchanged for an access token.</li>
+<li>Client decrypts the code, and send it back to the server.</li>
+<li>Server responds with an access_code and it’s expiry time.</li>
+</ul>
+
+<p>The solution we came up with was to have an options class for each stage of the authentication process that contains the name of each parameter, plus a default value. Individual vendor configs can overwrite both the key name, and it’s value, or for more specific providers it can be set at run-time (or new a vendor config file can be created). The idea is to support out-of-the-box as many common vendors as possible, so that Mr End User can simply do:</p>
+
+<pre><code>$OAuth2 = new Client(new ClientOptionsVendorGoogle());
+$token = $OAuth2-&gt;getAccessToken();
+</code></pre>
+
+<p>Overwriting certain parameters for a specific implementation is also very easy. A good example is Facebook. The specification dictates that the stage 2 response returns an access code, and the number of seconds before that code will expire. The spec also says this parameter should be named “expires_in”, however when Facebook coded their implementation, the field was named “expires”. Using the simple overloading method, we can easily make this change in the vendor specific config:</p>
+
+<pre><code>$this-&gt;vendorOptions = new VendorOptions(array(
+    'authEntryUri'      =&gt; 'https://www.facebook.com/dialog/oauth',
+    'tokenEntryUri'     =&gt; 'https://graph.facebook.com/oauth/access_token',
+    'responseFormat'    =&gt; 'urlencode',
+    'headers'           =&gt; array(),
+));
+
+$this-&gt;stage2Response-&gt;expiresIn-&gt;accessKey = 'expires';
+</code></pre>
+
+<p>We set up some vendor specific uris, and then tell the config that the stage 2 response “expires_in” key is actually named “expires”.</p>
+
+<p>I’m pretty excited about how this has turned out, now all we need to do is to come to some kind of concencious on where in the framework this code will live. For more discussion, join the action in #zftalk.2 on Freenode.</p>
+            <hr/>
+                            <div id="disqus_thread"></div>
+                <script type="text/javascript">
+                    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                    var disqus_shortname = 'hockblog'; // required: replace example with your forum shortname
+
+                    /* * * DON'T EDIT BELOW THIS LINE * * */
+                    (function() {
+                        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+                        </div>
+        <div class="span3">
+            <div class="well well-small">
+                <ul id="latest-blog-posts">
+                    <h3>Latest Blog Posts</h3>
+                    <li><a href="/zf2-for-zf1-users-part-2"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 2</h4><p>28 Sep 2012</p></a></li>
+<li><a href="/zf2-for-zf1-users-part-1"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 1</h4><p>26 Sep 2012</p></a></li>
+<li><a href="/zend-framework-2-REST"><h4>Zend Framework 2 and a Restful API Application</h4><p>29 May 2012</p></a></li>
+<li><a href="/zend-framework-2-OAuth2"><h4>ZendOAuth2Client maybe?</h4><p>10 May 2012</p></a></li>
+<li><a href="/facebook-fb-connect-streampublish"><h4>FB.Connect.streamPublish – wrestling the demons of the Facebook JS library</h4><p>11 Jun 2010</p></a></li>
+                </ul>
+            </div>
+
+            <a class="twitter-timeline" href="https://twitter.com/GeeH" data-widget-id="251243211404754944">Tweets by @GeeH</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; Gary Hockin All rights reserved.</p>
+    </footer>
+
+</div>
+<!-- /container -->
+
+
+<script>
+    var _gaq = [
+        ['_setAccount', 'UA-35128972-1'],
+        ['_trackPageview']
+    ];
+    (function (d, t) {
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s)
+    }(document, 'script'));
+</script>
+
+</body>
+</html>
+

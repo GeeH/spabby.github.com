@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ZF2 Gary Hockin Technical Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Le styles -->
+    <link href="/css/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/style.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/bootstrap-responsive.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <!-- Scripts -->
+    <script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+<!--[if lt IE 9]> <script type="text/javascript" src="/js/html5.js"></script><![endif]-->
+</head>
+
+<body>
+
+<!--<div class="navbar navbar-fixed-top">-->
+<!--    <div class="navbar-inner">-->
+<!--        <div class="container">-->
+<!--            <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy_normal.png" alt="Gary Hockin Blog"-->
+<!--                 class="img-polaroid pull-left" id="nav-portrait"/>-->
+<!--            <a class="brand"-->
+<!--               href="--><!--">-->
+<!--</a>-->
+<!---->
+<!--            <form class="pull-right navbar-search">-->
+<!--                <input type="text" class="search-query" placeholder="Search">-->
+<!--            </form>-->
+<!--        </div>-->
+<!---->
+<!--    </div>-->
+<!---->
+<!--</div>-->
+
+<div class="container">
+    <div class="hero-unit">
+        <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy.png" alt="Gary Hockin" width="175"
+             height="175" align="right" class="img-polaroid" id="hero-portrait"/>
+
+        <h1><a href="/">Gary Hockin Blog</a></h1>
+
+        <p>Technical musings on PHP, specifically Zend Framework (1 and 2)</p>
+    </div>
+
+    <div class="row">
+        <div class="span9">
+            <p class="hidden">Automatically run some code before every controller in Zend Framework.</p>
+
+<h1>Want to do something in every single controller? Use a Front Controller Plugin</h1>
+
+<p>On our latest site, we are splitting the actual website into 3 different applications. Although some will be screaming “use Zend’s module feature!”, there is a good reason why we want to do this. Mainly, it’s because, the actually front-end advertising website will be hosted on a different domain to the actual content-rich back-end.</p>
+
+<p>Part of this logic means that for the site we are currently developing, every single controller used in the back-end needs to check if the user is authenticated, and if not, needs to forward the user to the login controller.  The easy way to do this is to use call the Auth model in each controllers _init function, and do the check there. What I wanted to achieve was a global site-wide check on each and every controller so that all the authentication checks are in one place.</p>
+
+<p>Step forward the Front Controller plugin.</p>
+
+<p>Firstly, you have to understand a little about how the dispatch process works in order to fully understand how and where to create your FC plugin. I found reading the Zend_Controller Basics page of the Zend Framework manual extremely helpful (see “More reading…” below).</p>
+
+<p>The next question was where do I want the authentication to take place.  I decided that before the dispatch process was best, and so decided to bind my function at the pre-dispatch stage.  It saves the whole dispatch process from being run-through if the user is not authenticated.</p>
+
+<p>So, to the code; firstly, I created the plugin that extends Zend_Controller_Plugin_Abstract.</p>
+
+<pre><code>application/plugins/AuthPlugin.php
+/**
+ * Application auth plugin
+ *
+ * @uses Zend_Controller_Plugin_Abstract
+ */
+
+class Central_Plugin_AuthPlugin extends Zend_Controller_Plugin_Abstract
+{
+     public function dispatchLoopStartup(Zend_Controller_Request_Abstract $request)
+     {
+        // if not logged in, redirect to the login page
+        // create an instance of Zend_Auth
+        $auth = Zend_Auth::getInstance();
+        // if not logged in
+        if (!$auth-&gt;hasIdentity())
+        {
+            // set the new controller name to be the login controller
+            $request-&gt;setControllerName('login')
+            // set dispached to be false so the dispatch loop starts again
+            -&gt;setDispatched(false);
+        }
+     }
+}
+</code></pre>
+
+<p>Next up, we need to load the plugin from the bootstrap:</p>
+
+<pre><code>// grab an instance of the front controller
+$front = Zend_Controller_Front::getInstance();
+// register a fc plugin
+$front-&gt;registerPlugin(new Central_Plugin_AuthPlugin());
+// go go go!
+$front-&gt;dispatch();
+</code></pre>
+
+<p>It’s really as simple as that, I would like to investigate in the future loading the controller from the application.ini which I believe is possible. But for now, this works.</p>
+
+<p>Edit:
+Using the application.ini really is a much simpler way of loading your plugins… try this on for size:</p>
+
+<pre><code>resources.frontController.plugins[] = "Plugin_AuthPlugin"
+</code></pre>
+
+<p>More reading…</p>
+
+<ul>
+<li><a href="http://framework.zend.com/manual/en/zend.controller.basics.html">Zend Framework manual entry on Zend_Controller</a></li>
+<li><a href="http://devzone.zend.com/article/3372-Front-Controller-Plugins-in-Zend-Framework">Zend Framework Devzone Article on Front Controller Plugins</a></li>
+</ul>
+            <hr/>
+                            <div id="disqus_thread"></div>
+                <script type="text/javascript">
+                    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                    var disqus_shortname = 'hockblog'; // required: replace example with your forum shortname
+
+                    /* * * DON'T EDIT BELOW THIS LINE * * */
+                    (function() {
+                        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+                        </div>
+        <div class="span3">
+            <div class="well well-small">
+                <ul id="latest-blog-posts">
+                    <h3>Latest Blog Posts</h3>
+                    <li><a href="/zf2-for-zf1-users-part-2"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 2</h4><p>28 Sep 2012</p></a></li>
+<li><a href="/zf2-for-zf1-users-part-1"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 1</h4><p>26 Sep 2012</p></a></li>
+<li><a href="/zend-framework-2-REST"><h4>Zend Framework 2 and a Restful API Application</h4><p>29 May 2012</p></a></li>
+<li><a href="/zend-framework-2-OAuth2"><h4>ZendOAuth2Client maybe?</h4><p>10 May 2012</p></a></li>
+<li><a href="/facebook-fb-connect-streampublish"><h4>FB.Connect.streamPublish – wrestling the demons of the Facebook JS library</h4><p>11 Jun 2010</p></a></li>
+                </ul>
+            </div>
+
+            <a class="twitter-timeline" href="https://twitter.com/GeeH" data-widget-id="251243211404754944">Tweets by @GeeH</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; Gary Hockin All rights reserved.</p>
+    </footer>
+
+</div>
+<!-- /container -->
+
+
+<script>
+    var _gaq = [
+        ['_setAccount', 'UA-35128972-1'],
+        ['_trackPageview']
+    ];
+    (function (d, t) {
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s)
+    }(document, 'script'));
+</script>
+
+</body>
+</html>
+

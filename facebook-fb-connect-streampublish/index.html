@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ZF2 Gary Hockin Technical Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Le styles -->
+    <link href="/css/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/style.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/css/bootstrap-responsive.min.css" media="screen" rel="stylesheet" type="text/css">
+<link href="/images/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon">
+    <!-- Scripts -->
+    <script type="text/javascript" src="/js/jquery-1.7.2.min.js"></script>
+<!--[if lt IE 9]> <script type="text/javascript" src="/js/html5.js"></script><![endif]-->
+</head>
+
+<body>
+
+<!--<div class="navbar navbar-fixed-top">-->
+<!--    <div class="navbar-inner">-->
+<!--        <div class="container">-->
+<!--            <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy_normal.png" alt="Gary Hockin Blog"-->
+<!--                 class="img-polaroid pull-left" id="nav-portrait"/>-->
+<!--            <a class="brand"-->
+<!--               href="--><!--">-->
+<!--</a>-->
+<!---->
+<!--            <form class="pull-right navbar-search">-->
+<!--                <input type="text" class="search-query" placeholder="Search">-->
+<!--            </form>-->
+<!--        </div>-->
+<!---->
+<!--    </div>-->
+<!---->
+<!--</div>-->
+
+<div class="container">
+    <div class="hero-unit">
+        <img src="https://si0.twimg.com/profile_images/1368153646/HOCKERS_copy.png" alt="Gary Hockin" width="175"
+             height="175" align="right" class="img-polaroid" id="hero-portrait"/>
+
+        <h1><a href="/">Gary Hockin Blog</a></h1>
+
+        <p>Technical musings on PHP, specifically Zend Framework (1 and 2)</p>
+    </div>
+
+    <div class="row">
+        <div class="span9">
+            <p class="hidden">Publishing to Facebook using FB.Connect.streamPublish.</p>
+
+<h1>FB.Connect.streamPublish – wrestling the demons of the Facebook JS library</h1>
+
+<p>Yes, it’s true, I’ve officially mastered the most under documented API in history.</p>
+
+<p>We are currently using the FBML method of publishing our wonderful Lord of the Rings licensed game. All has been rosey in the garden of The One Ring, until we found out that the FBJS Flash bridge is the most unimpressive piece of script I have ever seen. We found that random errors would creep into the loading of the SWF because of this bridge, and decided that the only way around it was to bite the bullet and move to iframe mode.</p>
+
+<p>For those who don’t know, iframe mode basically means you can side-step all the ridiculous limitations imposed upon you by Facebook, and basically just have your application sit in an iframe, interacting with Facebook through the API and a set of Javascript client libraries. The wonderful thing is that we could keep our “invite your friends!” and other fbml based pages as fbml. Hooray!</p>
+
+<p>However, what I didn’t recon on was the amazing lack of documentation and examples when it comes to working in iframe mode. The crux of any successful Facebook app lies in self-publication, encouraging the user to tell the world how he has gained a new level in growing tulips, or played his longest Scrabble word ever. We wanted to be able to do this from within the PHP (well HTML if your being a pedant), or within the SWF. Simples. You’d think so, but apparently not.</p>
+
+<p>After wrestling the Javascript library to the ground, I came to the following conclusions:</p>
+
+<ol>
+<li>The Facebook Javascript client library is woefully under-documented.</li>
+<li>You need to use the FB.Connect functions, even though your application is not technically a Facebook Connect app.</li>
+<li>You need to have an xd_receiver.htm file on your server in order to communicate with the JS API.</li>
+<li>You need to configure the callback URL on the “Connect” tab of the developer settings for your app.</li>
+</ol>
+
+<p>You can then use the following code to spawn a stream post box…</p>
+
+<pre><code>&lt;CODE REMOVED, NOW OUT OF DATE! LEAVE A COMMENT IF NEW CODE WILL BE HANDY&gt;
+</code></pre>
+
+<p>It’s a starting point at least, and as I’ve spend the last few days looking for just this example, I thought it might help someone down the line. This may not be the best way to achieve my goal, all comments would be received with thanks.</p>
+
+<p>Also, you may well find FB.Connect.getStatus() handy, it was how I found out that my connect settings were wrong in the app settings page.</p>
+
+<p>Useful Links:</p>
+
+<ul>
+<li><a href="http://wiki.developers.facebook.com/index.php/Cross_Domain_Communication_Channel">http://wiki.developers.facebook.com/index.php/Cross_Domain_Communication_Channel</a></li>
+<li><a href="http://wiki.developers.facebook.com/index.php/JavaScript_Client_Library">http://wiki.developers.facebook.com/index.php/JavaScript_Client_Library</a></li>
+<li><a href="http://developers.facebook.com/docs/?u=facebook.jslib.FB.Connect.streamPublish">http://developers.facebook.com/docs/?u=facebook.jslib.FB.Connect.streamPublish</a></li>
+<li><a href="http://developers.facebook.com/docs/?u=facebook.jslib.FB.Connect.get_status">http://developers.facebook.com/docs/?u=facebook.jslib.FB.Connect.get_status</a></li>
+</ul>
+            <hr/>
+                            <div id="disqus_thread"></div>
+                <script type="text/javascript">
+                    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+                    var disqus_shortname = 'hockblog'; // required: replace example with your forum shortname
+
+                    /* * * DON'T EDIT BELOW THIS LINE * * */
+                    (function() {
+                        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+                        </div>
+        <div class="span3">
+            <div class="well well-small">
+                <ul id="latest-blog-posts">
+                    <h3>Latest Blog Posts</h3>
+                    <li><a href="/zf2-for-zf1-users-part-2"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 2</h4><p>28 Sep 2012</p></a></li>
+<li><a href="/zf2-for-zf1-users-part-1"><h4>An Introduction to Zend Framework 2 for the Zend Framework 1 Developer - Part 1</h4><p>26 Sep 2012</p></a></li>
+<li><a href="/zend-framework-2-REST"><h4>Zend Framework 2 and a Restful API Application</h4><p>29 May 2012</p></a></li>
+<li><a href="/zend-framework-2-OAuth2"><h4>ZendOAuth2Client maybe?</h4><p>10 May 2012</p></a></li>
+<li><a href="/facebook-fb-connect-streampublish"><h4>FB.Connect.streamPublish – wrestling the demons of the Facebook JS library</h4><p>11 Jun 2010</p></a></li>
+                </ul>
+            </div>
+
+            <a class="twitter-timeline" href="https://twitter.com/GeeH" data-widget-id="251243211404754944">Tweets by @GeeH</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; Gary Hockin All rights reserved.</p>
+    </footer>
+
+</div>
+<!-- /container -->
+
+
+<script>
+    var _gaq = [
+        ['_setAccount', 'UA-35128972-1'],
+        ['_trackPageview']
+    ];
+    (function (d, t) {
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s)
+    }(document, 'script'));
+</script>
+
+</body>
+</html>
+
