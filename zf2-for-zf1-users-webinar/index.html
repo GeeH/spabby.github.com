@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,205 +48,29 @@
         <div class="span9">
             <p class="hidden">Part 2 of my introduction to Zend Framework 2 for the ZF1 developer.</p>
 
-<p><a href="/zf2-for-zf1-users-part-1">Go to Part 1!</a></p>
+<p><a href="/zf2-for-zf1-users-part-2">Go to Part 2!</a></p>
 
-<h1>ZF2 for the ZF1 Developer - Part 2</h1>
+<h1>ZF2 for the ZF1 Developer - The Webinar</h1>
 
-<p>This is part 2 of my series aimed at giving Zend Framework 1 developers an introduction to Zend Framework 2, if you haven't read part 1, there's a link at the top of the page.</p>
-
-<p>I've decided to actually make this series 3 parts, in this part I'll be talking about Routing, the Event Manager, and finally the Service Manager.</p>
-
-<h2>Routing</h2>
-
-<h3>ZF1</h3>
-
-<p>Routing is ZF1 is quite straight-forward. You typically add configured <code>Zend_Controller_Router_Route</code> objects to the standard <code>Zend_Controller_Router_Rewrite</code> object during bootstrapping or using the shortcuts in application.ini. The router is pretty good (although its restricted to HTTP requests), if a little cumbersome, and its performance isn't all it can be. Typically, routes are added to ZF1 in the <code>application.ini</code> like this:</p>
-
-<p><code>application.ini</code></p>
-
-<pre><code>;Match route /product/1289 to ProductController DetailsAction with the paramters ProductId set to 1289
-resources.router.routes.product.route = "/product/:ProductId"
-resources.router.routes.product.defaults.controller = "product"
-resources.router.routes.product.defaults.action = "details"
-</code></pre>
-
-<h3>ZF2</h3>
-
-<p>Routing in ZF2 is fundamentally changed. There is no application level routing, instead, routing is added on a per-module basis. This has the benefit of allowing a module to add routes to an application on an ad-hoc basis.
-A great example of this is the ZfcUser module; it adds a new <code>/user</code> entry point that by default includes a login and registration form.
-In my personal opinion, while the routing is much more flexible and considerably quicker in ZF2, I find the trade-off is usability and debugging. It can be difficult to debug problems as finding out which particular module is contributing the problem route can be painful.
-Adding the equivalent route to the example above in ZF2 can be done like this:</p>
-
-<p><code>module.config.php</code></p>
-
-<pre><code>return array(
-    'router' =&gt; array(
-        'routes' =&gt; array(
-            'category' =&gt; array(
-                'type' =&gt; 'Segment',
-                'options' =&gt; array(
-                    'route' =&gt; '/product/:ProductId',
-                    'constraints' =&gt; array(
-                        'ProductId' =&gt; '[0-9]*'
-                    ),
-                    'defaults' =&gt; array(
-                        '__NAMESPACE__' =&gt; 'Application\Controller',
-                        'controller' =&gt; 'Product',
-                        'action' =&gt; 'details',
-                    ),
-                ),
-            ),
-            ...
-</code></pre>
-
-<div class="alert alert-danger">
-<h4>Note!</h4>
-<p>A nice point of note is that you can perform some data validation in the route; the `constraints` key allows you to specify a regular expression that a given parameter should match.</p>
-</div>
-
-<h2>Service Manager (Service Locator)</h2>
-
-<h3>ZF1</h3>
-
-<p>ZF1 doesn't have a Service Manager as such, I guess the closest thing is <code>Zend_Registry</code> which is really only an object store. <code>Zend_Registry</code> basically allows you to store objects somewhere that other classes will look to pull from, in order to setup things like view helpers.
-It's really just a simple storage engine. A good example of how <code>Zend_Registry</code> can work is it's usage within <code>Zend_Translate</code>.
-If you put a <code>Zend_Translate</code> object into the registry in your bootstrap (under the <code>Zend_Translate</code> key), then  ZF1 will look for it during the dispatch process,
-and automatically setup the <code>translate</code> view helper for you. This means that in your view you can use <code>$this-&gt;translate('ZF is great!')</code>, and the framework will check your translations for the right code.</p>
-
-<h3>ZF2</h3>
-
-<p>All change! <code>Zend_Registry</code> doesn't exist in ZF2, it's been indirectly been replaced by <code>Zend\ServiceManager</code>, and, to a lesser extent, <code>Zend\Di</code>. There are a few different SM (or ServiceLocator) in use around the framework. I won't go in to detail here, because <em>Jurian Sluiman</em> has done a great blog post about them here:</p>
-
-<p><a href="http://juriansluiman.nl/en/article/120/using-zend-framework-service-managers-in-your-application">http://juriansluiman.nl/en/article/120/using-zend-framework-service-managers-in-your-application</a></p>
-
-<div class="alert alert-danger">
-<h4>Note! - Zend\Di</h4>
-<p>As a point of note, `Zend\Di` (Dependency Injector) is loosely a Service Manager itself. Di actually magically handles your dependencies by using your auto-loader to know where it should load classes from. It then introspectively determines the dependencies of any given class and tries to fulfil those dependencies in an interative process. It's very cool, but actually not that feasible in a production environment because it's a little sloooooow. You can speed it up by generating configuration classes before moving to production, but that's pretty much what the Service Manager does anyway, so I prefer to use that from the start.</p>
-</div>
-
-<p><code>Zend\ServiceManager</code> (or <code>SM</code> as I'm going to call it from now on) basically allows you to manager all your services in one place.
-It will lazily load classes as and when you need them, fulfilling their dependencies by using the factories you define (usually within closures). The great thing about this is, that you can do a <code>$sm-&gt;get('My\Cool\Service')</code> and let the SM worry about whether to create a new instance, or use one that's been created earlier on in your application flow. Because these configurations can be stored in functions of your <code>Module.php</code>, it means the process is very quick; it can also happily be cached by an opcode cache (like APC).</p>
-
-<div class="alert alert-danger">
-<h4>Note! - SM Configuration</h4>
-It's worth noting, to avoid confusion, that the SM can also be configured through a `service_manager` key in the `module.config.php` array. This is to be avoided where possible as these arrays with closures can't be cached by an opcode cache.
-</div>
-
-<p>Using the SM couldn't really be easier. The SM is injected into any class that is called via itself and implements the <code>ServiceLocatorAware</code> interface. <code>Zend\Mvc\Controller\ActionController</code> implements this interface, so it's really easy to access any required services from you controllers, but even better is to use the SM to inject the dependencies from a factory:
-<code>Modules\Application\src\Application\Controller\MyController.php</code></p>
-
-<pre><code>namespace Application;
-
-use Zend\Mvc\Controller\ActionController;
-use Application\Service\MyService;
-
-class MyController extends ActionController
-{
-
-    protected $myService;
-
-    public function __construct(MyService $myService)
-    {
-        $this-&gt;myService = $myService;
-    }
-
-    public function indexAction()
-    {
-        return array('myViewVar' =&gt; $myService-&gt;getMyViewVar());
-    }
-
-}
-</code></pre>
-
-<p><code>Modules\Application\Module.php</code></p>
-
-<pre><code>public function getServiceConfig()
-{
-    return array(
-        'factories =&gt; array(
-            'myService' =&gt; function(ServiceManager $sm) {
-$myService = new \Application\Service\MyService();
-$myService-&gt;setSomeProperty(true);
-return $myService;
-            },
-        ),
-    );
-}
-
-public function getControllerConfig()
-{
-    return array(
-        'factories' =&gt; array(
-             'Application\Controller\MyController' =&gt; function(ServiceLocator $sl) {
-                 $myService = $sl-&gt;getServiceManager()-&gt;get('myService');
-                 $myController = new \Application\Controller\MyController($myService);
-                 return $myService;
-             },
-        ),
-    );
-}
-</code></pre>
-
-<p>An important point to note is that controller factories do not get passed the same service locator as service factories. For that reason we need to get the generic service manager from the service locator with <code>getServiceManager()</code> method before grabbing the <code>myService</code> instance.</p>
-
-<p>But really, that's it, that's the underlying principles of the SM in a nutshell. As with <code>Zend_Registry</code> in ZF1, certain components will look in the service manager in pre-configured keys for factories. For example, <code>Zend\Translate</code> will look in the <code>translate</code> key. This means that the bootstrapping of your translate class can be done in the service manager and not a bootstrap file.</p>
-
-<h2>Event Manager</h2>
-
-<h3>ZF1</h3>
-
-<p>Again, the Event Manager is a new concept for ZF2. Technically it exists in ZF 1.12 as it was back-ported from the ZF2 implementation, but I don't count that!
-In a nutshell, the Event Manager (henceforth knows as the EM) allows you to attach code to discrete events that may (or may not) happen in your application.
-In broad terms the EM replaces the Front Controller Plugin from ZF1, but realistically its so much more.</p>
-
-<h3>ZF2</h3>
-
-<p>The EM is used in a number of places in the ZF2 core MVC framework. For example, let's add some code to the <code>loadModules.pre</code> event to do something clever before modules are loaded:</p>
-
-<p><code>Module.php</code></p>
-
-<pre><code>public function init(ModuleManager $moduleManager)
-{
-    $moduleManager-&gt;getEventManager()-&gt;attach('loadModules.pre', function(\Zend\ModuleManager\ModuleEvent $e) {
-        // do some pre module loading code here
-    });
-}
-</code></pre>
-
-<p>More useful is using the Event Manager to attach code to user-defined events in your own modules.
-A great example is if you want to ensure you perform some cleanup code every time a user logs out of your site. You can easily create a <code>User.Logout</code> event, and fire that event
-any time a user logs out (or is logged out) defining the event in your module is easy...</p>
-
-<p><code>Module.php</code></p>
-
-<pre><code>public function init(ModuleManager $moduleManager)
-{
-    $moduleManager-&gt;getEventManager()-&gt;attach('myUser.Logout', function(\Zend\ModuleManager\ModuleEvent $e) {
-        // cleanup some cache/temp files here
-    });
-}
-</code></pre>
-
-<p><code>MyUserService.php</code></p>
-
-<pre><code>/**
- *  Presume you have passed the EM into $eventManager via SM or Di
- **/
-public function logout()
-{
-    \\ do Logout code
-    $this-&gt;eventManager-&gt;trigger('myUser.Logout');
-}
-</code></pre>
-
-<p>This is a pretty flaky example, but the application event manager is available through the service manager, and you can
-also create your own instances of an EM for handling custom event if you so desire.</p>
-
-<h3>Part 3</h3>
-
-<p>I'm hoping the delay between part 1 and part 2 isn't going to be replicated between part 2 and part 3. Apologies for the
-delay, I'm so very busy in work!</p>
-            <hr/>
+<p>
+    I know lots of people have been waiting a long time for Part 3 of this series, I can only apologies for the delay,
+    and hope that this post somehow makes up for the wait!
+</p>
+<p>
+    In February I gave a talk on behalf of Zend which compiled parts one and two of this series, plus the non-written part
+    three into a spoken talk that included code examples. The video is included here for all your viewing pleasure:
+</p>
+<p>
+    <iframe width="640" height="480" src="http://www.youtube.com/embed/rbEwmq1luUY?rel=0" frameborder="0" allowfullscreen></iframe>
+</p>
+<p>
+    While I may still write part three in blog format, it will only cover what is mentioned in this webinar. The slides
+    can be found <a href="http://www.slideshare.net/geehock/zf2-for-the-zf1-developer" target="_BLANK">here.</a>
+</p>   
+<p>
+    Enjoy!
+</p>
+<hr/>
                             <div id="disqus_thread"></div>
                 <script type="text/javascript">
                     /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
