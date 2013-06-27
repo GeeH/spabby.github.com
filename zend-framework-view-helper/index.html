@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,31 +48,40 @@
         <div class="span9">
             <p class="hidden">How to change the default validation error messages with Zend_Form.</p>
 
-<h1>Custom Messages for Zend_Form_Element::addValidator</h1>
+<p class="hidden">Writing and auto-loading a custom view helper in ZF.</p>
 
-<p>Today I wanted to change the custom validation error messages that are generated when using Zend_Form. This isn’t as easy as I first hoped, because even with all of the documentation on the ZF site, I still had some problems understanding exactly what the Zend_Validate class needed to receive in order to display my custom errors.</p>
+<h1>Writing a Custom View Helper in Zend Framework</h1>
 
-<p>Basically, each <code>::addValidtor</code> method takes 3 parameters, the type of validator, whether to break the chain on validation failure,  and an array of custom options.  One of these options (messages) needs to be set in order for the form to display your custom messages. These messages take the form of a key=>value array where the key is they type of validation faliure (string of between 5 and 10 characters could be too short or too long), and the value is the custom error message.</p>
+<p>I wanted to write a set of functions available to me from the view to do some repetitive tasks, such as converting a number to a set monetary format. It was obvious to me that I needed to write a custom view helper, but I had some small problems along the way that are worth mentioning.</p>
 
-<p>For example:</p>
+<p>The docs on the Zend Framework site on writing custom view helpers (here) are a little misleading. They say that as long as you follow the naming rules, that your helper will autoload and instantiate. The documentation give an example where the class is named <code>My_View_Helper_SpecialPurpose</code>. Having written my code, I found that the best way to get the class to autoload is to put the script in the views/helpers directory, and name it <code>Zend_View_Helper_SpecialPurpose</code>. Everything then worked with no changes needed to my bootstrap.</p>
 
-<pre><code>-&gt;addValidator('stringLength', true, array('min'=&gt;1, 'max'=&gt;32, 'messages'=&gt;array(Zend_Validate_StringLength::TOO_LONG =&gt;'The maximum number of characters is %max%')))
+<p>For those of you interested, here is my code:</p>
+
+<p><code>/application/views/helpers/ToPounds.php</code></p>
+
+<pre><code>class Zend_View_Helper_ToPounds extends Zend_View_Helper_Abstract
+{
+    /**
+    * Returns an integer value converted to pounds
+    *
+    * @return string
+    * @param $int Integer value to convert to £ format
+    * @access public
+    */
+    public function toPounds($int)
+    {
+        return htmlentities('£'.number_format($int, 2, '.', ','));
+    }
+}
 </code></pre>
 
-<p>This looks like a bit of a mess to me, so I decided to create an array of the messages arrays, and pass that to the options array instead.</p>
+<p>I can now call the function from within any view using:</p>
 
-<p>One of the biggest changes to note, is that before I was using the custom messages, I was just passing the option parameters as values, and no in key=>value pairs. For example in the stringLength example above, my old code was:</p>
-
-<pre><code>-&gt;addValidator('stringLength', true, array(1,32))
+<pre><code>&lt;?php echo $this-&gt;toPounds(100); ?&gt;
 </code></pre>
 
-<p>In fact, once I got my head around having to pass the custom options as key=>value pairs, everything quickly fell into place.</p>
-
-<p>As an extra aside, if you are using setRequired, and want to overwrite the default “Value is required and can’t be empty” message, simply add your own notEmpty validator with a custom error message as I’ve shown above.</p>
-
-<p>For a list of constants each validator uses to put in your messages array see:</p>
-
-<p>59.5. Validation Messages</p>
+<p>I hope that helps somebody.</p>
             <hr/>
                             <div id="disqus_thread"></div>
                 <script type="text/javascript">
